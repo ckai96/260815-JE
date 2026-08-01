@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>嘉義日月潭 | 5天4夜 家族漫遊</title>
+    <style>
+        :root {
+            --primary-color: #2E7D32; /* 阿里山森林綠 */
+            --secondary-color: #0277BD; /* 日月潭湖水藍 */
+            --accent-color: #FFB300; /* 日出金 */
+            --bg-color: #F4F6F7;
+            --text-main: #333333;
+            --text-light: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 70px; /* 留出底部導航列空間 */
+        }
+
+        /* 頂部標題 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: 1px; }
+        header p { font-size: 0.8rem; margin-top: 5px; opacity: 0.9; }
+
+        /* 內容區域 */
+        .content-section {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .content-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 卡片設計 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+        .card-blue { border-left-color: var(--secondary-color); }
+        .card-gold { border-left-color: var(--accent-color); }
+
+        .day-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 5px;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .timeline-item:last-child { margin-bottom: 0; }
+        
+        .time {
+            min-width: 50px;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            padding-top: 2px;
+        }
+        
+        .activity {
+            flex-grow: 1;
+            padding-left: 10px;
+            border-left: 2px solid #eee;
+        }
+        .activity h4 { font-size: 0.95rem; margin-bottom: 3px; }
+        .activity p { font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px; line-height: 1.4; }
+
+        /* 導航按鈕 */
+        .map-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #E8F5E9;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 5px;
+            border: 1px solid #C8E6C9;
+        }
+        .map-btn::before { content: '📍 '; }
+        
+        /* 列表樣式 */
+        ul.custom-list { padding-left: 20px; margin-top: 10px; font-size: 0.9rem; line-height: 1.6; }
+        ul.custom-list li { margin-bottom: 8px; }
+
+        /* 預算表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        th, td { padding: 10px 5px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background-color: #f9f9f9; color: var(--text-main); }
+        .total-row { font-weight: bold; color: var(--primary-color); background-color: #E8F5E9; }
+
+        /* 底部導航列 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.7rem;
+            flex: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>嘉義・日月潭 5天4夜家族旅遊</h1>
+        <p>8/15 (六) - 8/19 (三) | 老幼共遊悠閒版</p>
+    </header>
+
+    <!-- 1. 每日行程 (Itinerary) -->
+    <main id="tab-itinerary" class="content-section active">
+        
+        <!-- Day 1 -->
+        <div class="card">
+            <h2 class="day-title">Day 1: 8/15 (六) 南院文藝行</h2>
+            <div class="timeline-item">
+                <div class="time">09:00</div>
+                <div class="activity">
+                    <h4>台北出發</h4>
+                    <p>快樂啟程，兩台車無線電/LINE通話保持聯繫。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">11:30</div>
+                <div class="activity">
+                    <h4>午餐：客家本色 中科店</h4>
+                    <p>附大型停車場，雙車友善。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=客家本色中科店" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">15:00</div>
+                <div class="activity">
+                    <h4>故宮博物院南部院區</h4>
+                    <p>★建議：讓長輩幼童搭乘園區高爾夫球接駁車至主館避暑。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=國立故宮博物院南部院區" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">17:30</div>
+                <div class="activity">
+                    <h4>晚餐：頂六江家火雞肉飯</h4>
+                    <p>中埔交流道旁，好停車不進市區。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=頂六江家火雞肉飯" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">19:00</div>
+                <div class="activity">
+                    <h4>住宿：雲登景觀飯店</h4>
+                    <a href="https://www.google.com/maps/search/?api=1&query=嘉義雲登景觀飯店" target="_blank" class="map-btn">導航至飯店</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 2 -->
+        <div class="card">
+            <h2 class="day-title">Day 2: 8/16 (日) 童趣與雲海</h2>
+            <div class="timeline-item">
+                <div class="time">10:30</div>
+                <div class="activity">
+                    <h4>鄒族逐鹿文創園區</h4>
+                    <p>體驗餵梅花鹿，地勢平坦推車好走。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=鄒族逐鹿文創園區" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">12:30</div>
+                <div class="activity">
+                    <h4>午餐：大巴掌飲食生活工作坊</h4>
+                    <a href="https://www.google.com/maps/search/?api=1&query=大巴掌飲食生活工作坊" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">14:30</div>
+                <div class="activity">
+                    <h4>頂石棹步道群 (櫻之道)</h4>
+                    <p>★長幼建議走平緩的「櫻之道」，避開階梯多的二延平步道。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=頂石棹櫻之道" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">17:00</div>
+                <div class="activity">
+                    <h4>隙頂/石棹 觀夕陽</h4>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">18:30</div>
+                <div class="activity">
+                    <h4>晚餐：街角永富苦茶油雞</h4>
+                    <p>或 龍舞雲海高山蔬菜火鍋</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=街角永富苦茶油雞" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">20:00</div>
+                <div class="activity">
+                    <h4>住宿：石棹八號</h4>
+                    <a href="https://www.google.com/maps/search/?api=1&query=嘉義石棹八號" target="_blank" class="map-btn">導航至民宿</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 3 -->
+        <div class="card">
+            <h2 class="day-title">Day 3: 8/17 (一) 阿里山神木</h2>
+            <div class="timeline-item">
+                <div class="time">09:30</div>
+                <div class="activity">
+                    <h4>阿里山國家森林遊樂區</h4>
+                    <p>兩台車需提早找車位。車站周邊閒晃適應海拔。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=阿里山國家森林遊樂區" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">11:00</div>
+                <div class="activity">
+                    <h4>午餐：山賓餐廳</h4>
+                    <p>招牌石頭火鍋，務必提早吃避開排隊。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=阿里山山賓餐廳" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">13:00</div>
+                <div class="activity">
+                    <h4>阿里山小火車 (護膝路線)</h4>
+                    <p>單程至沼平車站 ➔ 平緩下坡走神木區 ➔ 神木車站搭回程。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">17:30</div>
+                <div class="activity">
+                    <h4>晚餐：阿宏的家</h4>
+                    <a href="https://www.google.com/maps/search/?api=1&query=阿里山阿宏的家" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">19:30</div>
+                <div class="activity">
+                    <h4>住宿：亮晨民宿</h4>
+                    <a href="https://www.google.com/maps/search/?api=1&query=亮晨民宿" target="_blank" class="map-btn">導航至民宿</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 4 -->
+        <div class="card card-blue">
+            <h2 class="day-title" style="color:var(--secondary-color)">Day 4: 8/18 (二) 奮起湖與日月潭</h2>
+            <div class="timeline-item">
+                <div class="time">05:30</div>
+                <div class="activity">
+                    <h4>觀賞日出 (自由參加)</h4>
+                    <p>民宿周邊迎接絕美日出。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">10:00</div>
+                <div class="activity">
+                    <h4>奮起湖老街</h4>
+                    <p>★務必 10:30 前抵達搶車位！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=奮起湖老街" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">11:30</div>
+                <div class="activity">
+                    <h4>午餐：老街美食散策</h4>
+                    <p>奮起湖便當、百年檜木甜甜圈、愛玉。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">13:30</div>
+                <div class="activity">
+                    <h4>驅車前往南投日月潭</h4>
+                    <p>車程約 2.5 小時，可讓小孩車上睡午覺。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">16:00</div>
+                <div class="activity">
+                    <h4>住宿：雲品溫泉酒店</h4>
+                    <p>辦理入住，享受尊榮設施與無障礙空間。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=日月潭雲品溫泉酒店" target="_blank" class="map-btn">導航至飯店</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">18:00</div>
+                <div class="activity">
+                    <h4>晚餐：雲品酒店百匯</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 5 -->
+        <div class="card card-blue">
+            <h2 class="day-title" style="color:var(--secondary-color)">Day 5: 8/19 (三) 原民歡樂與賦歸</h2>
+            <div class="timeline-item">
+                <div class="time">08:30</div>
+                <div class="activity">
+                    <h4>飯店早餐與設施</h4>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">10:30</div>
+                <div class="activity">
+                    <h4>九族文化村 & 日月潭纜車</h4>
+                    <p>長輩搭纜車賞景，幼童體驗歡樂設施。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=九族文化村" target="_blank" class="map-btn">導航</a>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">15:30</div>
+                <div class="activity">
+                    <h4>準備北上返程</h4>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="time">20:00</div>
+                <div class="activity">
+                    <h4>抵達台北</h4>
+                    <p>溫暖的家，平安賦歸。</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 2. 交通資訊 (Transportation) -->
+    <main id="tab-transport" class="content-section">
+        <div class="card">
+            <h2 class="day-title">🚗 自駕與交通攻略</h2>
+            <ul class="custom-list">
+                <li><strong>雙車聯絡：</strong>山區訊號可能不佳，建議雙車可準備對講機，或利用 LINE 通話保持車距。</li>
+                <li><strong>停車預警：</strong>
+                    <ul>
+                        <li><span style="color:red">奮起湖老街 (Day 4)：</span> 車位極少，務必在早上 10:30 前抵達周圍停車場卡位。</li>
+                        <li><span style="color:red">阿里山園區 (Day 3)：</span> 暑假期間車多，建議早點入園停放。</li>
+                    </ul>
+                </li>
+                <li><strong>老幼護膝搭車法 (阿里山)：</strong> 買單程票搭火車上【沼平車站】，緩下坡走路逛神木區，再從【神木車站】搭火車回阿里山站，最省體力。</li>
+                <li><strong>暈車對策：</strong> 第 2、3 天山路較多，易暈車的長輩及小孩請於上山前半小時服用暈車藥。</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 3. 住宿資訊 (Accommodation) -->
+    <main id="tab-hotel" class="content-section">
+        <div class="card">
+            <h2 class="day-title">🏨 住宿資訊</h2>
+            
+            <div class="timeline-item">
+                <div class="activity">
+                    <h4>Day 1 | 雲登景觀飯店 (嘉義)</h4>
+                    <p>景觀絕佳，長幼友善的星級飯店。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=嘉義雲登景觀飯店" target="_blank" class="map-btn">Map導航</a>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #eee; margin: 10px 0;">
+            <div class="timeline-item">
+                <div class="activity">
+                    <h4>Day 2 | 石棹八號 (阿里山)</h4>
+                    <p>絕美夕陽雲海觀賞點，溫馨茶園民宿。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=石棹八號" target="_blank" class="map-btn">Map導航</a>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #eee; margin: 10px 0;">
+            <div class="timeline-item">
+                <div class="activity">
+                    <h4>Day 3 | 亮晨民宿 (阿里山)</h4>
+                    <p>近二延平步道，方便隔日早起賞日出。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=亮晨民宿" target="_blank" class="map-btn">Map導航</a>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #eee; margin: 10px 0;">
+            <div class="timeline-item">
+                <div class="activity">
+                    <h4>Day 4 | 雲品溫泉酒店 (日月潭)</h4>
+                    <p>五星奢華體驗，無障礙設施完善，小孩放電神殿。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=日月潭雲品溫泉酒店" target="_blank" class="map-btn">Map導航</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 4. 行李清單 (Luggage) -->
+    <main id="tab-luggage" class="content-section">
+        <div class="card">
+            <h2 class="day-title">🎒 行前準備與行李</h2>
+            <ul class="custom-list">
+                <li><strong>長輩與幼童專屬：</strong>
+                    <ul>
+                        <li>✅ 輕便好收納的嬰兒推車 (故宮南院、逐鹿、九族皆好推)</li>
+                        <li>✅ 幼童常用常備藥、防蚊液、防曬乳</li>
+                        <li>✅ 長輩慢行手杖/登山杖 (阿里山神木區備用)</li>
+                    </ul>
+                </li>
+                <li><strong>衣物穿搭：</strong>
+                    <ul>
+                        <li>✅ 阿里山海拔高(2000m)，早晚溫差極大(夏日夜間約 15-18 度)。務必準備<strong>秋/冬厚外套、防風衣</strong>。</li>
+                        <li>✅ 日月潭及嘉義市區偏熱，短袖配薄外套即可。</li>
+                        <li>✅ 好走的防滑運動鞋。</li>
+                    </ul>
+                </li>
+                <li><strong>證件與其他：</strong>
+                    <ul>
+                        <li>✅ 65 歲以上長輩與 3 歲幼童之<strong>身分證/健保卡</strong> (買門票常有敬老票/免費票優惠)。</li>
+                        <li>✅ 雨具 (山區午後易有雷陣雨)。</li>
+                        <li>✅ 信用卡與足夠現金 (山區餐廳或小吃多收現金)。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 5. 預算概算 (Budget) -->
+    <main id="tab-budget" class="content-section">
+        <div class="card card-gold">
+            <h2 class="day-title" style="color:var(--accent-color)">💰 每日花費概算 (6人)</h2>
+            <p style="font-size: 0.8rem; color: #777; margin-bottom: 10px;">*以下為粗估 (不含已結帳之住宿費)</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>交通</th>
+                        <th>門票活動</th>
+                        <th>餐飲估</th>
+                        <th>單日小計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Day 1</td>
+                        <td>$1,000</td>
+                        <td>$450</td>
+                        <td>$2,500</td>
+                        <td>$3,950</td>
+                    </tr>
+                    <tr>
+                        <td>Day 2</td>
+                        <td>$500</td>
+                        <td>$1,000</td>
+                        <td>$4,300</td>
+                        <td>$5,800</td>
+                    </tr>
+                    <tr>
+                        <td>Day 3</td>
+                        <td>$300</td>
+                        <td>$1,820</td>
+                        <td>$4,500</td>
+                        <td>$6,620</td>
+                    </tr>
+                    <tr>
+                        <td>Day 4</td>
+                        <td>$1,000</td>
+                        <td>$0</td>
+                        <td>$1,500</td>
+                        <td>$2,500</td>
+                    </tr>
+                    <tr>
+                        <td>Day 5</td>
+                        <td>$1,200</td>
+                        <td>$4,300</td>
+                        <td>$2,500</td>
+                        <td>$8,000</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4">總計預估 (TWD)</td>
+                        <td>$26,870</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="font-size: 0.8rem; margin-top: 10px;">💡 阿里山、故宮南院憑證件有長者/幼童優惠，請務必攜帶身分證件。</p>
+        </div>
+    </main>
+
+    <!-- 底部導航列 -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('tab-itinerary', this)">
+            <span class="nav-icon">📅</span>行程
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-transport', this)">
+            <span class="nav-icon">🚗</span>交通
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-hotel', this)">
+            <span class="nav-icon">🏨</span>住宿
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-luggage', this)">
+            <span class="nav-icon">🎒</span>行李
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-budget', this)">
+            <span class="nav-icon">💰</span>預算
+        </button>
+    </nav>
+
+    <script>
+        function switchTab(tabId, btnElement) {
+            // 隱藏所有內容
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // 移除所有按鈕的 active 狀態
+            const btns = document.querySelectorAll('.nav-item');
+            btns.forEach(btn => btn.classList.remove('active'));
+            
+            // 顯示目標內容並亮起該按鈕
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            // 將畫面捲動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
